@@ -1,0 +1,15 @@
+# conda create -n torch -c conda-forge --strict-channel-priority python=3.10 pytorch torchvision numpy matplotlib pillow pyyaml notebook opencv
+# conda env create -n torch -f environment.yml
+channels:
+ - conda-forge
+ - defaults
+dependencies:
+ - python=3.10
+ - pytorch
+ - torchvision
+ - numpy
+ - matplotlib
+ - pillow
+ - pyyaml
+ - notebook
+ - opencv
