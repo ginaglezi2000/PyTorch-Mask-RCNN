@@ -12,7 +12,7 @@ import os
 if torch.cuda.is_available():  
   dev = "cuda:0" 
 else:  
-  dev = "cpu"  
+  dev = "cpu"
 device = torch.device(dev)  
 
 print("Device:", device)
@@ -35,7 +35,8 @@ COCO_INSTANCE_CATEGORY_NAMES = [
 
 # get the pretrained model from torchvision.models
 # Adding "device" to use GPU
-model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True).to(device)
+model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
+model.to(device)
 model.eval()
 
 def random_colour_masks(image):
