@@ -9,7 +9,13 @@ import random
 import time
 import os
 
+if torch.cuda.is_available():  
+  dev = "cuda:0" 
+else:  
+  dev = "cpu"  
+device = torch.device(dev)  
 
+print("Device:", device)
 
  # These are the classes that are available in the COCO-Dataset
 COCO_INSTANCE_CATEGORY_NAMES = [
@@ -28,9 +34,8 @@ COCO_INSTANCE_CATEGORY_NAMES = [
 ]
 
 # get the pretrained model from torchvision.models
-# Note: pretrained=True will get the pretrained weights for the model.
-# model.eval() to use the model for inference
-model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
+# Adding "device" to use GPU
+model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True).to(device)
 model.eval()
 
 def random_colour_masks(image):
@@ -114,7 +119,6 @@ colours = [[0, 255, 0],
            [245, 145, 50],
            [70, 150, 250],
            [50, 190, 190]]
-
 
 img = Image.open('gina_2016.jpg')
 plt.imshow(img)
