@@ -10,10 +10,10 @@ import time
 import os
 
 if torch.cuda.is_available():  
-  dev = "cuda:0" 
+  device = torch.device("cuda:0")
 else:  
-  dev = "cpu"
-device = torch.device(dev)  
+  device = torch.device("cpu")
+
 
 print("Device:", device)
 
@@ -127,7 +127,7 @@ plt.show()
 
 # Running inference on the image
 transform = T.Compose([T.ToTensor()])
-img_tensor = transform(img)
+img_tensor = transform(img).to(device)
 pred = model([img_tensor])
 
 # Lets look at what the `pred` looks like.
