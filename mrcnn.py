@@ -1,6 +1,10 @@
 from PIL import Image
 import matplotlib.pyplot as plt
 import torchvision.transforms as T
+import torchvision.transforms.functional as F  #GG
+from torchvision.models.detection import maskrcnn_resnet50_fpn
+from torchvision.models.detection import MaskRCNN_ResNet50_FPN_Weights   #GG
+import PIL  #GG
 import torchvision
 import torch
 import numpy as np
@@ -9,15 +13,15 @@ import random
 import time
 import os
 
-if torch.cuda.is_available():  
-  device = torch.device("cuda:0")
-else:  
-  device = torch.device("cpu")
+# if torch.cuda.is_available():  
+#   device = torch.device("cuda:0")
+# else:  
+#   device = torch.device("cpu")
 
 
-print("Device:", device)
+# print("Device:", device)
 
- # These are the classes that are available in the COCO-Dataset
+# These are the classes that are available in the COCO-Dataset
 COCO_INSTANCE_CATEGORY_NAMES = [
     '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
     'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A', 'stop sign',
@@ -33,11 +37,11 @@ COCO_INSTANCE_CATEGORY_NAMES = [
     'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
 ]
 
-# get the pretrained model from torchvision.models
-# Adding "device" to use GPU
-model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
-model.to(device)
-model.eval()
+# # get the pretrained model from torchvision.models
+# # Adding "device" to use GPU
+# model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
+# model.to(device)
+# model.eval()
 
 def random_colour_masks(image):
     """
@@ -121,34 +125,56 @@ colours = [[0, 255, 0],
            [70, 150, 250],
            [50, 190, 190]]
 
-img = Image.open('gina_2016.jpg')
-plt.imshow(img)
-plt.show()
 
-# Running inference on the image
-transform = T.Compose([T.ToTensor()])
-img_tensor = transform(img).to(device)
-pred = model([img_tensor])
+def main(image_path):
+  if torch.cuda.is_available():  
+    device = torch.device("cuda:0")
+  else:  
+    device = torch.device("cpu")
 
-# Lets look at what the `pred` looks like.
-# `pred` is a list of dictionaries, since we had passed a single image, we will get a single-item list
-pred[0]
+  print("Device:", device)
 
-# We will keep only the pixels with values  greater than 0.5 as 1, and set the rest to 0.
-masks = (pred[0]['masks']>0.5).squeeze().detach().cpu().numpy()
-masks.shape
+  # get the pretrained model from torchvision.models
+  # Adding "device" to use GPU
+  model = maskrcnn_resnet50_fpn(weights=MaskRCNN_ResNet50_FPN_Weights.COCO_V1)
+  model.to(device)
+  model.eval()
 
-# Let's plot the mask for the `person` class since the 0th mask belongs to `person`
-plt.imshow(masks[0], cmap='gray')
-plt.show()
+  img = Image.open(image_path)
+  print("Image size: ", img.size)
+  print("Image format: ", img.mode)
 
-# Let's color the `person` mask using the `random_colour_masks` function
-mask1 = random_colour_masks(masks[0])
-plt.imshow(mask1)
-plt.show()
+  img_tensor = F.pil_to_tensor(img)
+  preprocess_img = MaskRCNN_ResNet50_FPN_Weights.COCO_V1.transforms().to(device)
+  pred = model(preprocess_img(img_tensor).unsqueeze(dim=0))
 
-# Let's blend the original and the masked image and plot it.
-blend_img = cv2.addWeighted(np.asarray(img), 0.5, mask1, 0.5, 0)
+  # Lets look at what the `pred` looks like.
+  # `pred` is a list of dictionaries, since we had passed a single image, we will get a single-item list
+  # print("pred:", pred[0])
 
-plt.imshow(blend_img)
-plt.show()
+  # We will keep only the pixels with values  greater than 0.5 as 1, and set the rest to 0.
+  if pred[0]['masks'].shape[0] == 1:
+     masks = pred[0]['masks'][:][0]
+     masks = (masks>0.5).detach() 
+  else:
+    masks = (pred[0]['masks']>0.5).squeeze().detach() 
+
+  # Let's plot the mask for the `person` class since the 0th mask belongs to `person`
+  plt.imshow(masks[0], cmap='gray')
+  plt.show()
+
+  # Let's color the `person` mask using the `random_colour_masks` function
+  mask1 = random_colour_masks(masks[0])
+
+  # Let's blend the original and the masked image and plot it.
+  blend_img = cv2.addWeighted(np.asarray(img), 0.5, mask1, 0.5, 0)
+
+  plt.imshow(blend_img)
+  plt.show()
+
+if __name__=='__main__':
+  # path = 'gina_2016.jpg'    # works
+  path = './gina_oct2018.jpg'   # works with my fix
+  # path = './MAX_19-23 Surface white background.tif'  #doesn't work
+  # path = 'mrcnn_standing_people.jpg'    # works, one instance
+  main(path)
