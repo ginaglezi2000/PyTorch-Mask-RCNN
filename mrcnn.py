@@ -164,6 +164,8 @@ def main(image_path):
     masks = (pred[0]['masks']>0.5).squeeze().detach() 
 
   # Let's plot the mask for the `person` class since the 0th mask belongs to `person`
+  
+  masks = masks.cpu().numpy()  # Move masks tensor to CPU and convert to NumPy array
   plt.imshow(masks[0], cmap='gray')
   plt.show()
 
