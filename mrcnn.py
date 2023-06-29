@@ -145,9 +145,11 @@ def main(image_path):
   print("Image format: ", img.mode)
 
   img_tensor = F.pil_to_tensor(img)
-  # preprocess_img = MaskRCNN_ResNet50_FPN_Weights.COCO_V1.transforms().to(device)
   preprocess_img = MaskRCNN_ResNet50_FPN_Weights.COCO_V1.transforms()
-  pred = model(preprocess_img(img_tensor).unsqueeze(dim=0).to(device))
+  # preprocess_img = MaskRCNN_ResNet50_FPN_Weights.COCO_V1.transforms().to(device)
+  # preprocess_img = MaskRCNN_ResNet50_FPN_Weights.COCO_V1.transforms()
+  # pred = model(preprocess_img(img_tensor).unsqueeze(dim=0).to(device))
+  pred = model(preprocess_img(img_tensor).unsqueeze(dim=0))
 
   # Lets look at what the `pred` looks like.
   # `pred` is a list of dictionaries, since we had passed a single image, we will get a single-item list
