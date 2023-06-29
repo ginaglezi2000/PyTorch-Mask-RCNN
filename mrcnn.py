@@ -145,6 +145,7 @@ def main(image_path):
   print("Image format: ", img.mode)
 
   img_tensor = F.pil_to_tensor(img)
+  img_tensor = img_tensor.to(device)  # Move image tensor to the same device as the model
   preprocess_img = MaskRCNN_ResNet50_FPN_Weights.COCO_V1.transforms()
   # preprocess_img = MaskRCNN_ResNet50_FPN_Weights.COCO_V1.transforms().to(device)
   # preprocess_img = MaskRCNN_ResNet50_FPN_Weights.COCO_V1.transforms()
